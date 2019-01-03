@@ -95,47 +95,46 @@ def passwordchecker(password):
         containscharacters = ""
         points = 0
         i = 0
-        message += ("<p style='color:green;'>Your password is " + str(len(password)) + " characters long adding " + str(len(password)) + " points</p><br>")
+        message += ("<p style='color:green;'>Your password is " + str(len(password)) + " characters long adding " + str(len(password)) + " points</p>")
         for characters in pointconditions:
             if charactersincharacters(password, characters):
                 points += 5
                 containscharacters += ", "+pointsconditionsstrs[i]
             i += 1
-        message += ("<p style='color:green;'>Your password contains:" + containscharacters[1:] + " adding " + str(points) + " points</p><br>")
+        message += ("<p style='color:green;'>Your password contains:" + containscharacters[1:] + " adding " + str(points) + " points</p>")
         if points == 20:
             points += 10
-            message += ("<p style='color:green;'>Your password contains characters of all types, adding an additional 10 points</p><br>")
+            message += ("<p style='color:green;'>Your password contains characters of all types, adding an additional 10 points</p>")
         i=0
         for characters in pointconditions2:
             if charactersonlyincharacters(password, characters):
                 points += -5
-                message += ("<p style='color:red;'>Your password contains only "+pointsconditionsstrs2[i] + " subtracting 5 points</p><br>")
+                message += ("<p style='color:red;'>Your password contains only "+pointsconditionsstrs2[i] + " subtracting 5 points</p>")
             i+=1
         if keyboardcheck(password) != 0:
-            message += "<p style='color:red;'>Subtracting " + str(keyboardcheck(password)) + " points for use of consecutive characters on the keyboard</p><br>"
+            message += "<p style='color:red;'>Subtracting " + str(keyboardcheck(password)) + " points for use of consecutive characters on the keyboard</p>"
         points += -1 * keyboardcheck(password)
         points += len(password)
-        message += ("<p style='color:black;'>Your final score is "+ str(points)+"</p><br>")
+        message += ("<p style='color:black;'>Your final score is "+ str(points)+"</p>")
         if dictionarycheck(password) != []:
             printstring = ""
             for word in dictionarycheck(password):
                 printstring += ", " + word
-            message += ("<p style='color:red;'>The password checker found the following words in your password:" + printstring[1:]+"</p><br>")
-            message += ("<p style='color:red;'>Having words in your password makes your password vunerable to dictionary attack, a more efficient cracking method</p><br>")
+            message += ("<p style='color:red;'>The password checker found the following words in your password:" + printstring[1:]+"</p>")
+            message += ("<p style='color:red;'>Having words in your password makes your password vunerable to dictionary attack, a more efficient cracking method</p>")
         if points < 0:
             colour = "red"
-            strength = "Weak"
         elif points > 20:
             colour = "green"
-            strength = "Strong"
         else:
             colour = "yellow"
-            strength = "Medium"
-        f = open("Passwords.txt", "a+")
-        f.write("\"" +password + "\"" + " Score: " + str(points) + " " +strength + "\n")
-        return (message,colour)
+        if points < 55 and points > -67:
+            percentage = str(round((points+66)/1.2))+"%"
+        else:
+            percentage = "0%"
+        return (message,colour,percentage)
     else:
-        return ("<p style='color:red;'>"+checkpasswordallowed(password)+"</p>", "red")
+        return ("<p style='color:red;'>"+checkpasswordallowed(password)+"</p>", "red","0%")
 
 socketio = SocketIO(APP)
 @APP.route('/')
@@ -144,12 +143,13 @@ def main():
 
 @APP.route('/styles')
 def styles():
-    return send_from_directory("templates", "styles.css")
+	return send_from_directory("templates", "styles.css")
 	
 @socketio.on('sendpassword')
 def checkpassword(password):
-    message, colour = passwordchecker(password)
+    message, colour, percentage = passwordchecker(password)
     socketio.emit('sendfeedback', message)
     socketio.emit('changebackground', colour)
+    socketio.emit('changebarlength', percentage)
 
 socketio.run(APP)
