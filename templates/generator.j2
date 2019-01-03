@@ -10,7 +10,7 @@
 			}
 			socket.on('sendfeedback', function(message){
 				feedback = document.getElementById("feedback")
-				feedback.innerHTML = message
+				feedback.innerHTML = '<br>'+message
 			})
 		</script>
 	</head>
@@ -19,7 +19,6 @@
 		<h1>Password generating system</h1>
 		<p> By Luke Manning </p>
 		<button onclick="buttonpressed()" id="myBtn">Generate Password</button>
-		<br>
 		<div id="feedback"></div>
 	</body>
 </html>
