@@ -1,5 +1,6 @@
 body{
     background-color: #BCE2F3;
+	text-align: center;
 }
 h1 {
     font-family: 'Roboto', sans-serif;
@@ -11,3 +12,19 @@ h1 {
 h2 {
     font-family: 'Roboto', sans-serif;
     color: #00A3E0;
+}
+p{
+	margin-top:0px;
+}
+#feedback{
+	height: 600px
+}
+#barcontainer{
+	height: 60px;
+	background-color: #7c7c7c;
+}
+#bar{
+	height: 60px;
+	background-color: red;
+	width: 0%;
+}
