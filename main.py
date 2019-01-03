@@ -139,7 +139,11 @@ def passwordchecker(password):
 socketio = SocketIO(APP)
 @APP.route('/')
 def main():
-    return render_template('main.j2', text="WOW")
+    return render_template('main.j2')
+
+@APP.route('/generator')
+def generator():
+	return render_template('generator.j2')
 
 @APP.route('/styles')
 def styles():
