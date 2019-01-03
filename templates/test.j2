@@ -1,0 +1,154 @@
+<html>
+    <head>
+        <title>Device Status Report</title>
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+        <link href="/styles" rel="stylesheet">
+        <script>
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+            socket.on('connect', function(){
+                socket.emit('reqdevicetestdata')
+            })
+            socket.on('senddevicedata', function(data){
+                numberofrows = maintable.rows.length
+                for (i=1;i<numberofrows;i++){
+                    maintable.deleteRow(1)
+                }
+                active=false
+                for (i=0; i<data.length; i++){
+                    rowdata = data[i]
+                    maintable = document.getElementById("maintable")
+                    newrow = maintable.insertRow()
+                    cell1 = newrow.insertCell()
+                    cell2 = newrow.insertCell()
+                    cell3 = newrow.insertCell()
+                    cell4 = newrow.insertCell()
+                    cell5 = newrow.insertCell()
+                    cell6 = newrow.insertCell()
+                    cell1.innerHTML = rowdata.number
+                    cell2.innerHTML = rowdata.status
+                    if (rowdata.status != "Idle"){
+                        active=true
+                    }
+                    if(rowdata.status == "TG Error, please enter/scan the TG barcode below"){
+                        reqTGserialmac(rowdata.number)
+                    }else{
+                        thiserrordiv = document.getElementById("errordivjig"+rowdata.number)
+                        if (thiserrordiv){
+                            thiserrordiv.innerHTML = ""
+                        }
+                    }
+                    if (rowdata.status == "Idle" || rowdata.status.substring(0,8) == "Finished" || rowdata.status.substring(0, 5) == "Error"){
+                        cell3.innerHTML = '<input placeholder="DUT Serial Number here", id="SerialInput'+rowdata.number+'", type="text", class="Watermark">'
+                        cell4.innerHTML = '<input placeholder="DUT MAC-Address here", id="MACInput'+rowdata.number+'", type="text", class="Watermark">'
+                    }else{
+                        cell3.innerHTML = rowdata.serial_number
+                        cell4.innerHTML = rowdata.mac_address
+                    }
+                    if(rowdata.status == "DUT Error, please select the DUT device type in the table"){
+                        cell5.innerHTML = 'DUT Device type: <select id="dropdown'+rowdata.number+'"><option>LIB_306_42</option><option>LIB_225</option><option>LIB_304_AC</option><option>LIB_4424</option><option>LIB_305_LTE</option></select>'
+                        cell6.innerHTML = '<button onclick="devicetypebuttonpressed('+rowdata.number+')">Submit</button>'
+                    }else if(rowdata.status == "TG Error, please select the TG device type in the table"){
+                        cell5.innerHTML = 'TG Device type: <select id="dropdown'+rowdata.number+'"><option>LIB_306_24</option><option>LIB_306_42</option><option>LIB_225</option><option>LIB_304_AC</option><option>LIB_4424</option><option>LIB_305_LTE</option></select>'
+                        cell6.innerHTML = '<button onclick="devicetypebuttonpressed('+rowdata.number+')">Submit</button>'
+                    }else if(rowdata.status == "Idle" || rowdata.status.substring(0,8) == "Finished" || rowdata.status.substring(0, 5) == "Error"){
+                        cell5.innerHTML = rowdata.devicetype
+                        cell6.innerHTML = '<button onclick="buttonpressed('+rowdata.number+')">Start</button>'
+                    }else{
+                        cell5.innerHTML = rowdata.devicetype
+                        cell6.innerHTML = '<image id="loading" src="/spin_image">'
+                    }
+                }
+                if (!active){
+                    logdiv = document.getElementById('logger')
+                    logdiv.innerHTML = ""
+                }
+            })
+            function buttonpressed(jignumber){
+                if (jignumber){
+                    SerialInput = document.getElementById("SerialInput"+jignumber).value
+                    MacInput = document.getElementById("MACInput"+jignumber).value
+                    if (!Serial_Validate(SerialInput)){
+                        alert("Serial Number is incorrect, \nPlease check this and press start again when you're ready")
+                    }else if(!MAC_Validate(MacInput)){
+                        alert("MAC Address is incorrect, \nPlease check this and press start again when you're ready")
+                    }else{
+                        socket.emit('starttest', {'jignumber': jignumber, 'MAC-Address': MacInput, "Serial Number": SerialInput})
+                    }
+                }
+            }
+            function Serial_Validate(Serial){
+               var re = /^(\d{5,9})$/
+               return re.test(Serial)
+            }
+            function MAC_Validate(MAC){
+                var re2 = /^((?:[0-9A-Fa-f]{2}[:-]){5}(?:[0-9A-Fa-f]{2}))$/
+                var re3 = /^([0-9A-Fa-f]{12})$/
+                return(re2.test(MAC) || re3.test(MAC))
+            }
+            socket.on('log', function(message){
+                logdiv = document.getElementById('logger')
+                logdiv.innerHTML += "<br>"+message
+                logdiv.scrollTo(0,document.body.scrollHeight);
+            })
+            function reqTGserialmac(jignumber){
+                thiserrordiv = document.getElementById("errordivjig"+jignumber)
+                if (thiserrordiv){
+                    thiserrordiv.innerHTML = ""
+                }else{
+                    mainerrordiv = document.getElementById("errordiv")
+                    mainerrordiv.innerHTML += '<div id="errordivjig'+jignumber+'"></div>'
+                    thiserrordiv = document.getElementById("errordivjig"+jignumber)
+                }
+                thiserrordiv.innerHTML += 'Traffic Generator Serial Number for Jig '+jignumber+': <input placeholder="Enter TG Serial Number here", id="TGSerialInput'+jignumber+'", type="text", class="Watermark">'
+                thiserrordiv.innerHTML += ' Traffic Generator MAC-Address for Jig '+jignumber+': <input placeholder="Enter TG MAC-Address here", id="TGMacInput'+jignumber+'", type="text", class="Watermark">'
+                thiserrordiv.innerHTML += ' <button onclick="tgbuttonpressed('+jignumber+')">Submit</button>'
+            }
+            function tgbuttonpressed(jignumber){
+                SerialInput = document.getElementById("TGSerialInput"+jignumber).value
+                MacInput = document.getElementById("TGMacInput"+jignumber).value
+                if (!Serial_Validate(SerialInput)){
+                    alert("Serial Number is incorrect, \nPlease check this and press start again when you're ready")
+                }else if(!MAC_Validate(MacInput)){
+                    alert("MAC Address is incorrect, \nPlease check this and press start again when you're ready")
+                }else{
+                    thiserrordiv = document.getElementById("errordivjig"+jignumber)
+                    mainerrordiv = document.getElementById("errordiv")
+                    mainerrordiv.removeChild(thiserrordiv)
+                    socket.emit('serialmacsentback', {'Serial Number': SerialInput, 'MAC-Address': MacInput, 'jignumber': jignumber})
+                }
+            }
+            function devicetypebuttonpressed(jignumber){
+                selectele = document.getElementById('dropdown'+jignumber)
+                selected = selectele.options[selectele.selectedIndex].text;
+                socket.emit('devicetypesentback', {"selected": selected, 'jignumber': jignumber})
+            }
+        </script>
+    </head>
+    <body>
+        <div class=¨header¨, style="background-color:blue; padding: 10px 10px 10px 10px;">
+            <h1>Device Testing Interface</h1>
+        </div>
+        {%include 'navbar.j2'%}
+        <div class=¨content¨>
+            <h1>Device Testing</h1>
+            <table width="100%", id="maintable">
+                <tr>
+                    <th>Jig Number</th>
+                    <th>Jig Status</th>
+                    <th>DUT Serial Number</th>
+                    <th>DUT MAC-Address</th>
+                    <th>Device Type</th>
+                    <th>Action</th>
+                </tr>
+            </table>
+            <br>
+            <div id="errordiv">
+            </div>
+            <br>
+            <div id="logger", style="height: 50%; background-color: white; overflow: scroll">
+            </div>
+            <p> Note: Leaving this page will clear the log above</p>
+        </div>
+    </body>
+</html>

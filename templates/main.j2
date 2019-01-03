@@ -1,0 +1,28 @@
+<html>
+	<head>
+		<title>Testing</title>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+		<link href="/styles" rel="stylesheet">
+		<script>
+			var socket = io.connect('http://' + document.domain + ':' + location.port);
+			socket.on('sendfeedback', function(message){
+				feedback = document.getElementById("feedback")
+				feedback.innerHTML = message
+			})
+			function buttonpressed(){
+				password = document.getElementById('textbox').value
+				socket.emit('sendpassword', password)
+			}
+			socket.on('changebackground', function(colour){
+				document.body.style.backgroundColor = colour
+			})
+		</script>
+	</head>
+	<body>
+		<h1>Password testing system</h1>
+		<p> By Luke Manning </p>
+		<input placeholder="Type Password Here", id="textbox", type="text", class="Watermark">
+		<button onclick="buttonpressed()" id="myBtn">Submit</button>
+		<div id="feedback" style="background-color:white; height:60%"></div>
+	</body>
+</html>
