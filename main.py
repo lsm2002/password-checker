@@ -85,9 +85,8 @@ def passwordgenerator():
         length = random.randint(8,12)
         for i in range(0,length):
             password += random.choice(allowedcharacters)
-        score = passwordchecker(password)
-    print(password)
-    return[password,score]
+        message, colour, percentage, score = passwordchecker(password)
+    return(password,score)
 
 def passwordchecker(password):
     message = ""
@@ -132,9 +131,9 @@ def passwordchecker(password):
             percentage = str(round((points+66)/1.2))+"%"
         else:
             percentage = "0%"
-        return (message,colour,percentage)
+        return (message,colour,percentage,points)
     else:
-        return ("<p style='color:red;'>"+checkpasswordallowed(password)+"</p>", "red","0%")
+        return ("<p style='color:red;'>"+checkpasswordallowed(password)+"</p>", "red","0%", 0)
 
 socketio = SocketIO(APP)
 @APP.route('/')
@@ -151,9 +150,13 @@ def styles():
 	
 @socketio.on('sendpassword')
 def checkpassword(password):
-    message, colour, percentage = passwordchecker(password)
+    message, colour, percentage, score = passwordchecker(password)
     socketio.emit('sendfeedback', message)
     socketio.emit('changebackground', colour)
     socketio.emit('changebarlength', percentage)
 
+@socketio.on('requestpassword')
+def sendpassword():
+	password,score = passwordgenerator()
+	socketio.emit('sendfeedback', "Password: "+password+" Score: "+str(score))
 socketio.run(APP)
