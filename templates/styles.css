@@ -2,18 +2,6 @@ body{
     background-color: #BCE2F3;
     margin: 0;
 }
-table {
-    margin-left: 5px;
-    margin-right: 5px;
-}
-table, th, td {
-    border: 1px solid #1B1024;
-    border-collapse: collapse;
-    text-align: left;
-    padding: 3px 2px 3px 3px;
-    font-family: 'Roboto', sans-serif;
-}
-
 h1 {
     font-family: 'Roboto', sans-serif;
     margin-top: 10px;
@@ -21,40 +9,6 @@ h1 {
     margin-bottom: 10px;
     color: #00A3E0;
 }
-
 h2 {
     font-family: 'Roboto', sans-serif;
     color: #00A3E0;
-}
-.test_True {
-    background-color: #23B65A;
-    color: #1B1024;
-}
-
-.test_False {
-    background-color: #ff5555;
-    color: #1B1024;
-}
-li {
-    display: inline;
-}
-.navigation-bar{
-    background-color: #00A3E0;
-    padding: 10px 40px 10px 40px
-}
-ul{
-    margin: 0;
-    padding: 0px 0px 0px 0px;
-}
-#loading{
-    height: 20;
-    width: 20
-}
-.header{
-    background-color:white;
-    padding: 10px 10px 10px 10px;
-    display: flex;
-    align-items:center;
-    font-family: Impact;
-    font-size: 20px;
-}
