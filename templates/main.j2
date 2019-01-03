@@ -14,7 +14,10 @@
 				socket.emit('sendpassword', password)
 			}
 			socket.on('changebackground', function(colour){
-				document.body.style.backgroundColor = colour
+				document.getElementById("bar").style.backgroundColor = colour
+			})
+			socket.on('changebarlength', function(percentage){
+				document.getElementById("bar").style.width = percentage
 			})
 		</script>
 	</head>
@@ -23,6 +26,10 @@
 		<p> By Luke Manning </p>
 		<input placeholder="Type Password Here", id="textbox", type="text", class="Watermark">
 		<button onclick="buttonpressed()" id="myBtn">Submit</button>
-		<div id="feedback" style="background-color:white; height:60%"></div>
+		<br>
+		<div id="feedback"></div>
+		<div id="barcontainer">
+			<div id="bar"></div>
+		</div>
 	</body>
 </html>
